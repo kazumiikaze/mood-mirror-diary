@@ -334,11 +334,11 @@ function DailyWizard({ user, refreshUser, setPage }) {
     setStep((value) => Math.min(4, value + 1));
   };
 
-  const submit = () => {
+  const submit = async () => {
     setError('');
     setIsProcessing(true);
-    window.setTimeout(() => {
-      const analysis = analyzeDiary({
+    try {
+      const analysis = await analyzeDiary({
         mood: draft.mood,
         energy: draft.energy,
         diaryText: draft.diaryText,
@@ -349,20 +349,23 @@ function DailyWizard({ user, refreshUser, setPage }) {
       const entry = {
         ...draft,
         analysis,
-        createdAt: new Date().toISOString()
-      };
-      updateUser(user.username, (oldUser) => ({
-        ...oldUser,
-        entries: {
-          ...(oldUser.entries || {}),
-          [today]: entry
-        }
-      }));
-      refreshUser();
-      setIsProcessing(false);
-      setPage('result');
-    }, 1300);
-  };
+       createdAt: new Date().toISOString()
+     };
+     updateUser(user.username, (oldUser) => ({
+       ...oldUser,
+       entries: {
+         ...(oldUser.entries || {}),
+         [today]: entry
+       }
+     }));
+     refreshUser();
+     setPage('result');
+   } catch (err) {
+     setError('เกิดข้อผิดพลาด: ' + err.message);
+   } finally {
+     setIsProcessing(false);
+   }
+ };
 
   return (
     <section className="glass-card p-6 md:p-10">
