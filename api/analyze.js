@@ -160,6 +160,20 @@ export default async function handler(req) {
     analysis.engineVersion = `Groq ${MODEL}`;
     if (!analysis.weeklyReport) analysis.weeklyReport = '';
 
+    analysis.stressScore = analysis.stressScore ?? analysis.stress_score ?? 0;
+    analysis.sentimentScore = analysis.sentimentScore ?? analysis.sentiment_score ?? 0;
+    analysis.stressLevel = analysis.stressLevel ?? analysis.stress_level ?? 'ไม่ทราบ';
+    analysis.sentimentLabel = analysis.sentimentLabel ?? analysis.sentiment_label ?? 'ไม่ทราบ';
+    analysis.emotionSummary = analysis.emotionSummary ?? analysis.emotion_summary ?? '';
+    analysis.triggerSummary = analysis.triggerSummary ?? analysis.trigger_summary ?? '';
+    analysis.mentalSummary = analysis.mentalSummary ?? analysis.mental_summary ?? '';
+    analysis.smartResponse = analysis.smartResponse ?? analysis.smart_response ?? [];
+    analysis.aiInsight = analysis.aiInsight ?? analysis.ai_insight ?? '';
+    analysis.burnout = analysis.burnout ?? { risk: false, message: '' };
+    analysis.protectiveActions = analysis.protectiveActions ?? analysis.protective_actions ?? [];
+    analysis.emotionClassification = analysis.emotionClassification ?? analysis.emotion_classification ?? [];
+    analysis.triggers = analysis.triggers ?? [];
+
     return new Response(JSON.stringify(analysis), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
