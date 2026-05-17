@@ -960,83 +960,164 @@ function TreePage({ user }) {
   const streak = calculateStreak(user.entries);
   const daysAway = daysSinceLastEntry(user.entries);
   const resetVisual = daysAway > 7;
-  const leafCount = Math.min(90, Math.max(6, streak * 7));
-  const visibleLeaves = resetVisual ? 6 : leafCount;
-  const growthLabel = streak >= 14 ? 'ต้นไม้กำลังเติบโตดีมาก' : streak >= 7 ? 'เริ่มเป็นพุ่มใหญ่แล้ว' : streak >= 3 ? 'กำลังแตกใบใหม่' : 'ต้นกล้าเริ่มเติบโต';
+  const growthLabel =
+    streak >= 14 ? 'ต้นไม้กำลังเติบโตดีมาก'
+    : streak >= 7 ? 'เริ่มเป็นพุ่มใหญ่แล้ว'
+    : streak >= 3 ? 'กำลังแตกใบใหม่'
+    : 'ต้นกล้าเริ่มเติบโต';
+
+  const canopyScale = Math.min(1.35, 0.55 + streak * 0.058);
+  const leafOpacity = resetVisual ? 0.28 : 1;
 
   return (
-    <section className={`glass-card tree-scene p-7 md:p-9 ${resetVisual ? 'tree-reset' : ''}`}>
-      <div className="tree-sky-orb" />
-      <div className="tree-cloud cloud-one" />
-      <div className="tree-cloud cloud-two" />
-      <div className="relative z-10 max-w-xl">
-        <div className="badge mb-4"><Leaf size={16} /> Minimal Growth Tree</div>
+    <section style={{ position: 'relative', minHeight: 600, overflow: 'hidden', borderRadius: 32, background: 'linear-gradient(180deg,#c8e8f8 0%,#dff0e8 28%,#f0ead8 62%,#e0c898 100%)' }}>
+
+      {/* ---- SVG ฉากหลัง + ต้นไม้ ---- */}
+      <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+        viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="sunG" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#fff8c0"/>
+            <stop offset="45%" stopColor="#ffe870"/>
+            <stop offset="75%" stopColor="#ffd040" stopOpacity=".6"/>
+            <stop offset="100%" stopColor="#ffb800" stopOpacity="0"/>
+          </radialGradient>
+          <radialGradient id="trunkG" cx="32%" cy="40%" r="68%">
+            <stop offset="0%" stopColor="#d4a878"/>
+            <stop offset="45%" stopColor="#a87848"/>
+            <stop offset="100%" stopColor="#6c4820"/>
+          </radialGradient>
+          <radialGradient id="c1" cx="38%" cy="38%" r="62%">
+            <stop offset="0%" stopColor="#d8f0b8"/>
+            <stop offset="40%" stopColor="#b0d888"/>
+            <stop offset="100%" stopColor="#78a850"/>
+          </radialGradient>
+          <radialGradient id="c2" cx="35%" cy="35%" r="65%">
+            <stop offset="0%" stopColor="#e8f8c8"/>
+            <stop offset="45%" stopColor="#c0e890"/>
+            <stop offset="100%" stopColor="#88c058"/>
+          </radialGradient>
+          <radialGradient id="c3" cx="30%" cy="32%" r="70%">
+            <stop offset="0%" stopColor="#f0fcd8"/>
+            <stop offset="50%" stopColor="#d0f0a0"/>
+            <stop offset="100%" stopColor="#98d068"/>
+          </radialGradient>
+          <radialGradient id="c4" cx="28%" cy="28%" r="72%">
+            <stop offset="0%" stopColor="#f8ffe8"/>
+            <stop offset="55%" stopColor="#e0f8b8"/>
+            <stop offset="100%" stopColor="#b8e880"/>
+          </radialGradient>
+          <radialGradient id="c5" cx="25%" cy="25%" r="75%">
+            <stop offset="0%" stopColor="#ffffff"/>
+            <stop offset="40%" stopColor="#f0ffdc"/>
+            <stop offset="80%" stopColor="#d8f8a8"/>
+            <stop offset="100%" stopColor="#c0e880"/>
+          </radialGradient>
+          <filter id="leafShadow">
+            <feDropShadow dx="2" dy="5" stdDeviation="8" floodColor="rgba(40,80,20,0.18)"/>
+          </filter>
+          <filter id="trunkShadow">
+            <feDropShadow dx="4" dy="8" stdDeviation="6" floodColor="rgba(40,20,0,0.22)"/>
+          </filter>
+        </defs>
+
+        {/* ดวงอาทิตย์ */}
+        <circle cx="660" cy="72" r="62" fill="url(#sunG)" style={{ animation: 'sunPulse 6s ease-in-out infinite' }}/>
+        <ellipse cx="660" cy="72" rx="34" ry="34" fill="#fff9d0" opacity=".55"/>
+
+        {/* เมฆ */}
+        <rect x="480" y="110" width="100" height="22" rx="11" fill="rgba(255,255,255,0.72)" style={{ animation: 'cloudDrift 14s ease-in-out infinite' }}/>
+        <rect x="560" y="100" width="68" height="16" rx="8" fill="rgba(255,255,255,0.60)" style={{ animation: 'cloudDrift 14s ease-in-out infinite', animationDelay: '-5s' }}/>
+        <rect x="100" y="90" width="82" height="18" rx="9" fill="rgba(255,255,255,0.55)" style={{ animation: 'cloudDrift 14s ease-in-out infinite', animationDelay: '-9s' }}/>
+
+        {/* พื้น */}
+        <rect x="0" y="480" width="800" height="120" fill="#a07848"/>
+        <ellipse cx="400" cy="480" rx="420" ry="22" fill="#c8a870" opacity=".7"/>
+        <path d="M0,480 Q200,458 400,468 Q600,478 800,460 L800,480 L0,480Z" fill="#90c858"/>
+        <path d="M0,475 Q200,460 400,470 Q600,478 800,462 L800,476 L0,476Z" fill="#a8d870" opacity=".7"/>
+        <path d="M0,472 Q200,464 400,472 Q600,478 800,464 L800,472 L0,472Z" fill="#c0e888" opacity=".55"/>
+
+        {/* หญ้า */}
+        <g style={{ animation: 'grassSway 3.5s ease-in-out infinite', transformOrigin: '120px 480px' }}>
+          <path d="M118,480 Q114,458 120,440 Q124,428 118,414" fill="none" stroke="#6a9838" strokeWidth="2.5" strokeLinecap="round"/>
+          <path d="M126,480 Q130,462 126,446 Q122,432 128,420" fill="none" stroke="#7ab848" strokeWidth="2" strokeLinecap="round"/>
+        </g>
+        <g style={{ animation: 'grassSway 4.2s ease-in-out infinite', animationDelay: '-.8s', transformOrigin: '650px 480px' }}>
+          <path d="M648,480 Q644,460 650,442 Q654,430 648,416" fill="none" stroke="#6a9838" strokeWidth="2.5" strokeLinecap="round"/>
+          <path d="M658,480 Q662,462 658,446" fill="none" stroke="#7ab848" strokeWidth="2" strokeLinecap="round"/>
+        </g>
+
+        {/* เงาต้นไม้ */}
+        <ellipse cx="400" cy="478" rx="72" ry="13" fill="rgba(50,30,0,0.20)"/>
+
+        {/* ---- ต้นไม้ ---- */}
+        <g style={{ transformOrigin: '400px 480px', animation: 'treeSway 7s ease-in-out infinite' }}>
+          {/* ลำต้น */}
+          <path d="M383,480 Q376,420 372,360 Q368,290 374,248 Q380,210 390,190 Q395,178 400,174 Q405,178 410,190 Q420,210 426,248 Q432,290 428,360 Q424,420 417,480Z"
+            fill="url(#trunkG)" filter="url(#trunkShadow)"/>
+          <path d="M393,478 Q389,410 387,340 Q385,270 389,230 Q393,200 398,186"
+            fill="none" stroke="rgba(255,235,200,0.30)" strokeWidth="3.5" strokeLinecap="round"/>
+
+          {/* กิ่ง */}
+          <path d="M400,310 Q358,300 330,282 Q308,266 304,250" fill="none" stroke="#9a7038" strokeWidth="11" strokeLinecap="round"/>
+          <path d="M400,310 Q442,298 470,280 Q492,264 496,248" fill="none" stroke="#9a7038" strokeWidth="11" strokeLinecap="round"/>
+          <path d="M400,268 Q360,254 336,234 Q318,218 316,200" fill="none" stroke="#aa8048" strokeWidth="8.5" strokeLinecap="round"/>
+          <path d="M400,268 Q440,252 464,232 Q482,216 484,198" fill="none" stroke="#aa8048" strokeWidth="8.5" strokeLinecap="round"/>
+          <path d="M400,232 Q368,216 348,196 Q334,178 334,160" fill="none" stroke="#bc9058" strokeWidth="6.5" strokeLinecap="round"/>
+          <path d="M400,232 Q432,214 452,194 Q466,176 466,158" fill="none" stroke="#bc9058" strokeWidth="6.5" strokeLinecap="round"/>
+          <path d="M400,202 Q374,184 358,162 Q348,144 350,124" fill="none" stroke="#cc9e68" strokeWidth="5" strokeLinecap="round"/>
+          <path d="M400,202 Q426,182 442,160 Q452,142 450,122" fill="none" stroke="#cc9e68" strokeWidth="5" strokeLinecap="round"/>
+          <path d="M400,178 Q380,156 370,132 Q364,114 366,96" fill="none" stroke="#d8ae78" strokeWidth="3.5" strokeLinecap="round"/>
+          <path d="M400,178 Q420,154 430,130 Q436,112 434,94" fill="none" stroke="#d8ae78" strokeWidth="3.5" strokeLinecap="round"/>
+
+          {/* ทรงพุ่ม */}
+          <g transform={`translate(400,200) scale(${canopyScale}) translate(-400,-200)`} opacity={leafOpacity} filter="url(#leafShadow)">
+            <ellipse cx="400" cy="200" rx="168" ry="128" fill="url(#c1)" opacity=".82"/>
+            <ellipse cx="310" cy="238" rx="82" ry="65" fill="url(#c1)" opacity=".78"/>
+            <ellipse cx="490" cy="232" rx="78" ry="62" fill="url(#c1)" opacity=".76"/>
+            <ellipse cx="386" cy="176" rx="152" ry="114" fill="url(#c2)" opacity=".86"/>
+            <ellipse cx="300" cy="204" rx="68" ry="56" fill="url(#c2)" opacity=".80"/>
+            <ellipse cx="500" cy="198" rx="64" ry="54" fill="url(#c2)" opacity=".78"/>
+            <ellipse cx="374" cy="152" rx="132" ry="100" fill="url(#c3)" opacity=".88"/>
+            <ellipse cx="314" cy="170" rx="58" ry="48" fill="url(#c3)" opacity=".82"/>
+            <ellipse cx="488" cy="164" rx="56" ry="46" fill="url(#c3)" opacity=".80"/>
+            <ellipse cx="362" cy="128" rx="110" ry="84" fill="url(#c4)" opacity=".90"/>
+            <ellipse cx="326" cy="142" rx="48" ry="40" fill="url(#c4)" opacity=".84"/>
+            <ellipse cx="474" cy="136" rx="46" ry="38" fill="url(#c4)" opacity=".82"/>
+            <ellipse cx="354" cy="108" rx="88" ry="68" fill="url(#c5)" opacity=".88"/>
+            <ellipse cx="368" cy="90" rx="68" ry="54" fill="url(#c5)" opacity=".84"/>
+            <ellipse cx="382" cy="74" rx="48" ry="38" fill="url(#c5)" opacity=".80"/>
+            <ellipse cx="392" cy="60" rx="30" ry="24" fill="#f8ffec" opacity=".72"/>
+            {/* highlight spots */}
+            <ellipse cx="336" cy="170" rx="22" ry="16" fill="rgba(248,255,220,0.55)" transform="rotate(-18,336,170)"/>
+            <ellipse cx="462" cy="158" rx="20" ry="15" fill="rgba(248,255,220,0.50)" transform="rotate(14,462,158)"/>
+            <ellipse cx="366" cy="118" rx="26" ry="18" fill="rgba(255,255,235,0.62)" transform="rotate(-8,366,118)"/>
+            <ellipse cx="390" cy="78" rx="18" ry="14" fill="rgba(255,255,245,0.70)"/>
+            {/* sparkles */}
+            <circle cx="318" cy="186" r="5" fill="rgba(255,232,80,0.75)" style={{ animation: 'sparkle 3.8s ease-in-out infinite' }}/>
+            <circle cx="482" cy="174" r="4.5" fill="rgba(255,238,100,0.70)" style={{ animation: 'sparkle 4.4s ease-in-out infinite', animationDelay: '-.9s' }}/>
+            <circle cx="350" cy="130" r="5" fill="rgba(255,240,120,0.72)" style={{ animation: 'sparkle 3.5s ease-in-out infinite', animationDelay: '-1.6s' }}/>
+            <circle cx="386" cy="72" r="5.5" fill="rgba(255,248,160,0.80)" style={{ animation: 'sparkle 3.2s ease-in-out infinite', animationDelay: '-2s' }}/>
+          </g>
+        </g>
+
+        {/* นก */}
+        <path d="M80,340 Q90,330 100,340" fill="none" stroke="rgba(60,80,100,0.55)" strokeWidth="1.8" strokeLinecap="round" style={{ animation: 'birdfly 14s ease-in-out infinite', animationDelay: '-3s' }}/>
+        <path d="M105,334 Q115,324 125,334" fill="none" stroke="rgba(60,80,100,0.50)" strokeWidth="1.5" strokeLinecap="round" style={{ animation: 'birdfly 14s ease-in-out infinite', animationDelay: '-3s' }}/>
+      </svg>
+
+      {/* ---- ข้อความ overlay ---- */}
+      <div style={{ position: 'absolute', top: 28, left: 28, right: 28, zIndex: 10 }}>
+        <div className="badge mb-4"><Leaf size={16} /> Growth Tree</div>
         <h1 className="text-3xl md:text-5xl font-black">ต้นไม้สุขภาพใจของคุณ</h1>
-        <p className="mt-4 leading-8 text-[rgba(75,53,40,.70)]">
-          เขียน Diary ต่อเนื่องทุกวัน ต้นไม้จะค่อย ๆ แตกใบแบบละมุน minimal หากไม่ได้กลับมาเขียนเกิน 7 วัน animation จะ reset เพื่อเริ่มดูแลใจใหม่อีกครั้ง
+        <p className="mt-4 leading-8 text-[rgba(75,53,40,.70)] max-w-lg">
+          เขียน Diary ต่อเนื่องทุกวัน ต้นไม้จะค่อย ๆ แตกกิ่งก้านและใบอ่อน หากไม่ได้กลับมาเกิน 7 วัน ใบไม้จะร่วงและรอการดูแลใหม่
         </p>
         <div className="flex flex-wrap gap-3 mt-5">
           <span className="badge"><Flame size={16} /> Streak {streak} วัน</span>
           <span className="badge"><Sprout size={16} /> {growthLabel}</span>
-          <span className="badge"><Leaf size={16} /> ใบไม้ {visibleLeaves} ใบ</span>
-          {resetVisual && <span className="badge text-[#9a4a3c]"><RotateCcw size={16} /> reset animation แล้ว</span>}
+          {resetVisual && <span className="badge text-[#9a4a3c]"><RotateCcw size={16} /> ต้นไม้ต้องการการดูแล</span>}
         </div>
-      </div>
-
-      <div className="ground minimal-ground" />
-      <div className="tree-aura aura-one" />
-      <div className="tree-aura aura-two" />
-      <div className="planter" aria-hidden="true">
-        <div className="planter-lip" />
-        <div className="planter-body" />
-        <div className="planter-soil" />
-        <div className="planter-shadow" />
-      </div>
-      <div className="tree minimal-tree" aria-label="minimal animated diary tree">
-        <div className="tree-depth-shadow" />
-        <div className="root root-left" />
-        <div className="root root-right" />
-        <div className="trunk minimal-trunk"><span className="trunk-line line-a" /><span className="trunk-line line-b" /></div>
-        <div className="branch one" /><div className="branch two" /><div className="branch three" /><div className="branch four" /><div className="branch five" /><div className="branch six" />
-        <div className="canopy canopy-back" />
-        <div className="canopy canopy-mid" />
-        <div className="canopy canopy-front" />
-        {Array.from({ length: 9 }).map((_, index) => (
-          <span
-            key={`spark-${index}`}
-            className="tree-spark"
-            style={{
-              '--sx': `${14 + ((index * 23) % 72)}%`,
-              '--sy': `${8 + ((index * 17) % 48)}%`,
-              '--sd': `${index * 0.45}s`
-            }}
-          />
-        ))}
-        {Array.from({ length: visibleLeaves }).map((_, index) => {
-          const angle = (index * 137.508 + streak * 8) % 360;
-          const ring = index % 5;
-          const radiusX = 38 + ring * 18 + (index % 3) * 6;
-          const radiusY = 24 + ring * 11 + (index % 2) * 5;
-          const centerX = 50 + (index % 5 - 2) * 1.6;
-          const centerY = 31 + (index % 6 - 3) * 1.0;
-          const x = centerX + Math.cos(angle * Math.PI / 180) * radiusX;
-          const y = centerY + Math.sin(angle * Math.PI / 180) * radiusY;
-          const tone = index % 5;
-          const depth = ring <= 1 ? 'back' : ring === 2 ? 'mid' : 'front';
-          return (
-            <span
-              key={index}
-              className={`leaf minimal-leaf tone-${tone} depth-${depth}`}
-              style={{
-                '--x': `${Math.max(7, Math.min(93, x))}%`,
-                '--y': `${Math.max(2, Math.min(65, y))}%`,
-                '--r': `${angle}deg`,
-                '--d': `${index * 0.026}s`,
-                '--size': `${11 + (index % 6) * 2.7}px`
-              }}
-            />
-          );
-        })}
       </div>
     </section>
   );
