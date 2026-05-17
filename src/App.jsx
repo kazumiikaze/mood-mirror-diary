@@ -635,8 +635,8 @@ function Dashboard({ user }) {
         </div>
       </div>
       <div className="grid lg:grid-cols-3 gap-5">
-        <SimpleBarChart title="Stress Trend 7 วัน" entries={recent7} valueGetter={(item) => item.analysis?.stressScore || 0} max={100} />
-        <SimpleBarChart title="Energy Graph 7 วัน" entries={recent7} valueGetter={(item) => item.energy || 0} max={10} />
+        <SimpleBarChart title="Stress Trend 7 วัน" entries={recent7} valueGetter={(e) => e.analysis?.stressScore || 0} max={100} color="#8B5E3C" type="bar" />
+        <SimpleBarChart title="Energy Graph 7 วัน" entries={recent7} valueGetter={(e) => e.energy || 0} max={10} color="#7A9E7E" type="line" />
         <MoodSummary entries={recent30} />
       </div>
       <div ref={reportRef} className="report-print">
@@ -672,42 +672,207 @@ function ReportDocument({ user, entries, avgStress, avgEnergy, maxStress }) {
 }
 
 function MoodSummary({ entries }) {
+  const canvasRef = useRef(null);
+  const chartRef = useRef(null);
+
   const count = {};
-  entries.forEach((entry) => {
-    const label = entry.analysis?.emotionClassification?.[0]?.label || entry.mood || 'ไม่ชัดเจน';
+  entries.forEach((e) => {
+    const label = e.analysis?.emotionClassification?.[0]?.label || e.mood || 'ไม่ชัดเจน';
     count[label] = (count[label] || 0) + 1;
   });
-  const items = Object.entries(count).sort((a, b) => b[1] - a[1]);
+  const items = Object.entries(count).sort((a, b) => b[1] - a[1]).slice(0, 7);
+  const colors = items.map(([l]) => MOOD_COLORS[l] || '#888780');
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !items.length) return;
+
+    const loadChart = () => {
+      if (!window.Chart) return setTimeout(loadChart, 100);
+      if (chartRef.current) chartRef.current.destroy();
+
+      const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+      const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
+      const tickColor = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
+
+      chartRef.current = new window.Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: items.map(([l]) => l),
+          datasets: [{
+            label: 'จำนวนวัน',
+            data: items.map(([, v]) => v),
+            backgroundColor: colors.map((c) => c + 'CC'),
+            borderColor: colors,
+            borderWidth: 2,
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: isDark ? '#2C2C2A' : '#fff',
+              titleColor: isDark ? '#D3D1C7' : '#444441',
+              bodyColor: isDark ? '#B4B2A9' : '#5F5E5A',
+              borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+              borderWidth: 1, padding: 10, cornerRadius: 8
+            }
+          },
+          scales: {
+            x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 11 } }, min: 0 },
+            y: { grid: { display: false }, ticks: { color: tickColor, font: { size: 11 } } }
+          }
+        }
+      });
+    };
+
+    if (!document.getElementById('chartjs-cdn')) {
+      const s = document.createElement('script');
+      s.id = 'chartjs-cdn';
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+      s.onload = loadChart;
+      document.head.appendChild(s);
+    } else {
+      loadChart();
+    }
+
+    return () => chartRef.current?.destroy();
+  }, [entries]);
+
   return (
     <div className="glass-card p-6 chart-card">
-      <h3 className="text-xl font-black">Mood Summary 30 วัน</h3>
-      <div className="space-y-4 mt-5">
-        {items.map(([label, value]) => (
-          <div key={label}>
-            <div className="flex justify-between font-bold"><span>{label}</span><span>{value} วัน</span></div>
-            <div className="analysis-bar mt-2"><span style={{ width: `${Math.min(100, value * 18)}%` }} /></div>
-          </div>
+      <h3 className="text-xl font-black">mood summary 30 วัน</h3>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '10px 0' }}>
+        {items.map(([label, val], i) => (
+          <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'rgba(75,53,40,.65)' }}>
+            <span style={{ width: 8, height: 8, borderRadius: 2, background: colors[i], display: 'inline-block' }} />
+            {label} {val} วัน
+          </span>
         ))}
+      </div>
+      <div style={{ position: 'relative', width: '100%', height: Math.max(160, items.length * 36 + 40) }}>
+        <canvas ref={canvasRef} />
       </div>
     </div>
   );
 }
 
-function SimpleBarChart({ title, entries, valueGetter, max }) {
+const MOOD_COLORS = {
+  'สดใส': '#7A9E7E',
+  'เฉยๆ': '#B89880',
+  'เหนื่อย': '#8B5E3C',
+  'เศร้า': '#A67C5B',
+  'เครียด': '#C27A5A',
+  'กังวล': '#C4956A',
+  'โกรธ': '#9a4a3c'
+};
+
+const WARM = {
+  grid: 'rgba(139,94,60,0.10)',
+  tick: '#9a7c62',
+};
+
+const tooltipConfig = {
+  backgroundColor: '#fffaf2',
+  titleColor: '#4b3528',
+  bodyColor: '#9a7c62',
+  borderColor: '#e8d7c0',
+  borderWidth: 1,
+  cornerRadius: 10,
+  padding: 10
+};
+
+function SimpleBarChart({ title, subtitle, entries, valueGetter, max, color = '#D85A30', type = 'bar' }) {
+  const canvasRef = useRef(null);
+  const chartRef = useRef(null);
+  const id = useRef(`chart-${Math.random().toString(36).slice(2)}`);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !entries.length) return;
+
+    const loadChart = () => {
+      if (!window.Chart) return setTimeout(loadChart, 100);
+
+      if (chartRef.current) chartRef.current.destroy();
+
+      const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+      const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
+      const tickColor = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
+      const ctx = canvas.getContext('2d');
+
+      const data = entries.map((e) => Number(valueGetter(e)));
+      const labels = entries.map((e) => e.date?.slice(5) || '');
+
+      let dataset;
+      if (type === 'line') {
+        const grad = ctx.createLinearGradient(0, 0, 0, 180);
+        grad.addColorStop(0, color + '40');
+        grad.addColorStop(1, color + '00');
+        dataset = {
+          data, borderColor: color, backgroundColor: grad,
+          borderWidth: 2.5, pointBackgroundColor: color,
+          pointRadius: 4, pointHoverRadius: 6, fill: true, tension: 0.4
+        };
+      } else {
+        const grad = ctx.createLinearGradient(0, 0, 0, 180);
+        grad.addColorStop(0, color + 'DD');
+        grad.addColorStop(1, color + '30');
+        dataset = {
+          data, backgroundColor: grad, borderColor: color,
+          borderWidth: 2, borderRadius: 6, borderSkipped: false
+        };
+      }
+
+      chartRef.current = new window.Chart(ctx, {
+        type,
+        data: { labels, datasets: [{ label: title, ...dataset }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: isDark ? '#2C2C2A' : '#fff',
+              titleColor: isDark ? '#D3D1C7' : '#444441',
+              bodyColor: isDark ? '#B4B2A9' : '#5F5E5A',
+              borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+              borderWidth: 1, padding: 10, cornerRadius: 8
+            }
+          },
+          scales: {
+            x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 11 } } },
+            y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 11 } }, min: 0, max }
+          }
+        }
+      });
+    };
+
+    if (!document.getElementById('chartjs-cdn')) {
+      const s = document.createElement('script');
+      s.id = 'chartjs-cdn';
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+      s.onload = loadChart;
+      document.head.appendChild(s);
+    } else {
+      loadChart();
+    }
+
+    return () => chartRef.current?.destroy();
+  }, [entries]);
+
   return (
     <div className="glass-card p-6 chart-card">
       <h3 className="text-xl font-black">{title}</h3>
-      <div className="bar-chart">
-        {entries.map((entry) => {
-          const value = Number(valueGetter(entry));
-          return (
-            <div className="bar-item" key={entry.date} title={`${entry.date}: ${value}`}>
-              <div className="bar" style={{ height: `${Math.max(8, (value / max) * 138)}px` }} />
-              <div className="text-xs font-bold">{value}</div>
-              <div className="bar-label">{entry.date.slice(5)}</div>
-            </div>
-          );
-        })}
+      {subtitle && <p className="text-sm text-[rgba(75,53,40,.58)] mt-1">{subtitle}</p>}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '10px 0', fontSize: 12, color: 'rgba(75,53,40,.58)' }}>
+        <span style={{ width: 10, height: 10, borderRadius: 2, background: color, display: 'inline-block' }} />
+        {title}
+      </div>
+      <div style={{ position: 'relative', width: '100%', height: 180 }}>
+        <canvas ref={canvasRef} />
       </div>
     </div>
   );
