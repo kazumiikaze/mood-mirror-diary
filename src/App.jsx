@@ -681,19 +681,20 @@ function MoodSummary({ entries }) {
     count[label] = (count[label] || 0) + 1;
   });
   const items = Object.entries(count).sort((a, b) => b[1] - a[1]).slice(0, 7);
-  const colors = items.map(([l]) => MOOD_COLORS[l] || '#888780');
+  const colors = items.map(([l]) => MOOD_COLORS[l] || '#B89880');
+
+  // คำนวณ height ตามจำนวน items — ขั้นต่ำ 200px
+  const chartHeight = Math.max(200, items.length * 52 + 40);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !items.length) return;
 
-    const loadChart = () => {
-      if (!window.Chart) return setTimeout(loadChart, 100);
-      if (chartRef.current) chartRef.current.destroy();
+    const buildChart = () => {
+      if (!window.Chart) return;
+      if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
 
-      const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
-      const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
-      const tickColor = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
+      const maxVal = Math.max(...items.map(([, v]) => v));
 
       chartRef.current = new window.Chart(canvas.getContext('2d'), {
         type: 'bar',
@@ -706,55 +707,79 @@ function MoodSummary({ entries }) {
             borderColor: colors,
             borderWidth: 2,
             borderRadius: 6,
-            borderSkipped: false
+            borderSkipped: false,
+            barThickness: 28    // 👈 กำหนดความหนาแท่งตายตัว
           }]
         },
         options: {
-          responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: isDark ? '#2C2C2A' : '#fff',
-              titleColor: isDark ? '#D3D1C7' : '#444441',
-              bodyColor: isDark ? '#B4B2A9' : '#5F5E5A',
-              borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
-              borderWidth: 1, padding: 10, cornerRadius: 8
+              backgroundColor: '#fffaf2',
+              titleColor: '#4b3528',
+              bodyColor: '#9a7c62',
+              borderColor: '#e8d7c0',
+              borderWidth: 1,
+              cornerRadius: 10,
+              padding: 10,
+              callbacks: {
+                label: (ctx) => ` ${ctx.raw} วัน`
+              }
             }
           },
           scales: {
-            x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 11 } }, min: 0 },
-            y: { grid: { display: false }, ticks: { color: tickColor, font: { size: 11 } } }
+            x: {
+              grid: { color: 'rgba(139,94,60,0.10)' },
+              ticks: { color: '#9a7c62', font: { size: 11 }, stepSize: 1 },
+              min: 0,
+              max: Math.max(maxVal + 1, 5)   // 👈 scale อย่างน้อย 5 เสมอ
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: '#9a7c62', font: { size: 13 } }
+            }
           }
         }
       });
     };
 
-    if (!document.getElementById('chartjs-cdn')) {
-      const s = document.createElement('script');
-      s.id = 'chartjs-cdn';
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
-      s.onload = loadChart;
-      document.head.appendChild(s);
+    if (!window.Chart) {
+      if (!document.getElementById('chartjs-cdn')) {
+        const s = document.createElement('script');
+        s.id = 'chartjs-cdn';
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+        s.onload = buildChart;
+        document.head.appendChild(s);
+      } else {
+        const wait = setInterval(() => {
+          if (window.Chart) { clearInterval(wait); buildChart(); }
+        }, 50);
+      }
     } else {
-      loadChart();
+      buildChart();
     }
 
-    return () => chartRef.current?.destroy();
+    return () => { chartRef.current?.destroy(); chartRef.current = null; };
   }, [entries]);
 
   return (
     <div className="glass-card p-6 chart-card">
       <h3 className="text-xl font-black">mood summary 30 วัน</h3>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '10px 0' }}>
+      <p className="text-sm mt-1" style={{ color: '#9a7c62' }}>สัดส่วนอารมณ์ที่บันทึกทั้งหมด</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '10px 0 14px' }}>
         {items.map(([label, val], i) => (
-          <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'rgba(75,53,40,.65)' }}>
+          <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#9a7c62' }}>
             <span style={{ width: 8, height: 8, borderRadius: 2, background: colors[i], display: 'inline-block' }} />
             {label} {val} วัน
           </span>
         ))}
       </div>
-      <div style={{ position: 'relative', width: '100%', height: Math.max(160, items.length * 36 + 40) }}>
-        <canvas ref={canvasRef} />
+      {/* 👇 height คำนวณจากจำนวน items จริง */}
+      <div style={{ position: 'relative', width: '100%', height: `${chartHeight}px` }}>
+        <canvas ref={canvasRef} role="img" aria-label="mood summary 30 วัน" />
       </div>
     </div>
   );
