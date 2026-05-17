@@ -785,45 +785,47 @@ const tooltipConfig = {
   padding: 10
 };
 
-function SimpleBarChart({ title, subtitle, entries, valueGetter, max, color = '#D85A30', type = 'bar' }) {
+function SimpleBarChart({ title, entries, valueGetter, max, color = '#8B5E3C', type = 'bar' }) {
   const canvasRef = useRef(null);
   const chartRef = useRef(null);
-  const id = useRef(`chart-${Math.random().toString(36).slice(2)}`);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !entries.length) return;
 
-    const loadChart = () => {
-      if (!window.Chart) return setTimeout(loadChart, 100);
+    const buildChart = () => {
+      if (!window.Chart) return;
+      if (chartRef.current) {
+        chartRef.current.destroy();
+        chartRef.current = null;
+      }
 
-      if (chartRef.current) chartRef.current.destroy();
-
-      const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
-      const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
-      const tickColor = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
       const ctx = canvas.getContext('2d');
-
       const data = entries.map((e) => Number(valueGetter(e)));
       const labels = entries.map((e) => e.date?.slice(5) || '');
 
       let dataset;
       if (type === 'line') {
-        const grad = ctx.createLinearGradient(0, 0, 0, 180);
-        grad.addColorStop(0, color + '40');
+        const grad = ctx.createLinearGradient(0, 0, 0, 160);
+        grad.addColorStop(0, color + '55');
         grad.addColorStop(1, color + '00');
         dataset = {
           data, borderColor: color, backgroundColor: grad,
-          borderWidth: 2.5, pointBackgroundColor: color,
-          pointRadius: 4, pointHoverRadius: 6, fill: true, tension: 0.4
+          borderWidth: 2.5,
+          pointBackgroundColor: '#fffaf2',
+          pointBorderColor: color,
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          fill: true, tension: 0.45
         };
       } else {
-        const grad = ctx.createLinearGradient(0, 0, 0, 180);
-        grad.addColorStop(0, color + 'DD');
-        grad.addColorStop(1, color + '30');
+        const grad = ctx.createLinearGradient(0, 0, 0, 160);
+        grad.addColorStop(0, color);
+        grad.addColorStop(1, color + '44');
         dataset = {
           data, backgroundColor: grad, borderColor: color,
-          borderWidth: 2, borderRadius: 6, borderSkipped: false
+          borderWidth: 0, borderRadius: 8, borderSkipped: false
         };
       }
 
@@ -831,48 +833,73 @@ function SimpleBarChart({ title, subtitle, entries, valueGetter, max, color = '#
         type,
         data: { labels, datasets: [{ label: title, ...dataset }] },
         options: {
-          responsive: true, maintainAspectRatio: false,
+          responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: isDark ? '#2C2C2A' : '#fff',
-              titleColor: isDark ? '#D3D1C7' : '#444441',
-              bodyColor: isDark ? '#B4B2A9' : '#5F5E5A',
-              borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
-              borderWidth: 1, padding: 10, cornerRadius: 8
+              backgroundColor: '#fffaf2',
+              titleColor: '#4b3528',
+              bodyColor: '#9a7c62',
+              borderColor: '#e8d7c0',
+              borderWidth: 1,
+              cornerRadius: 10,
+              padding: 10
             }
           },
           scales: {
-            x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 11 } } },
-            y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 11 } }, min: 0, max }
+            x: {
+              grid: { color: 'rgba(139,94,60,0.10)' },
+              ticks: {
+                color: '#9a7c62',
+                font: { size: 11 },
+                autoSkip: false,      // 👈 บังคับแสดงทุก label
+                maxRotation: 0
+              }
+            },
+            y: {
+              grid: { color: 'rgba(139,94,60,0.10)' },
+              ticks: { color: '#9a7c62', font: { size: 11 } },
+              min: 0,
+              max
+            }
           }
         }
       });
     };
 
-    if (!document.getElementById('chartjs-cdn')) {
-      const s = document.createElement('script');
-      s.id = 'chartjs-cdn';
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
-      s.onload = loadChart;
-      document.head.appendChild(s);
+    if (!window.Chart) {
+      if (!document.getElementById('chartjs-cdn')) {
+        const s = document.createElement('script');
+        s.id = 'chartjs-cdn';
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+        s.onload = buildChart;
+        document.head.appendChild(s);
+      } else {
+        const wait = setInterval(() => {
+          if (window.Chart) { clearInterval(wait); buildChart(); }
+        }, 50);
+      }
     } else {
-      loadChart();
+      buildChart();
     }
 
-    return () => chartRef.current?.destroy();
+    return () => { chartRef.current?.destroy(); chartRef.current = null; };
   }, [entries]);
 
   return (
     <div className="glass-card p-6 chart-card">
       <h3 className="text-xl font-black">{title}</h3>
-      {subtitle && <p className="text-sm text-[rgba(75,53,40,.58)] mt-1">{subtitle}</p>}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '10px 0', fontSize: 12, color: 'rgba(75,53,40,.58)' }}>
+      <p className="text-sm mt-1" style={{ color: '#9a7c62' }}>
+        คะแนน 0–{max}
+      </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '10px 0', fontSize: 12, color: '#9a7c62' }}>
         <span style={{ width: 10, height: 10, borderRadius: 2, background: color, display: 'inline-block' }} />
-        {title}
+        {type === 'line' ? 'ระดับพลังงาน' : 'stress score'}
       </div>
-      <div style={{ position: 'relative', width: '100%', height: 180 }}>
-        <canvas ref={canvasRef} />
+      {/* 👇 ต้องกำหนด height ที่ wrapper ไม่ใช่ canvas */}
+      <div style={{ position: 'relative', width: '100%', height: '200px' }}>
+        <canvas ref={canvasRef} role="img" aria-label={title} />
       </div>
     </div>
   );
