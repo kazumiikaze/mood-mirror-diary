@@ -260,8 +260,7 @@ function Navbar({ user, page, setPage, onLogout }) {
     ['result', 'ผลวันนี้', Sparkles],
     ['dashboard', 'Dashboard', CalendarDays],
     ['history', 'History', History],
-    ['tree', 'ต้นไม้', Leaf],
-    ['settings', 'Settings', Settings]
+    ['tree', 'Tree', Leaf],
   ];
   return (
     <nav className="navbar glass-card">
