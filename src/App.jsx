@@ -181,7 +181,7 @@ function AuthScreen({ onLogin }) {
           ) : (
             <form className="space-y-4" onSubmit={handleSignup}>
               <h2 className="text-2xl font-black">สร้างบัญชีใหม่</h2>
-              <p className="text-[rgba(75,53,40,.66)]">ข้อมูลถูกเก็บแบบ localStorage สำหรับ demo เท่านั้น</p>
+              <p className="text-[rgba(75,53,40,.66)]"></p>
               <input className="input-field" placeholder="Username" value={signup.username} onChange={(e) => setSignup({ ...signup, username: e.target.value })} />
               <input className="input-field" placeholder="Age" type="number" value={signup.age} onChange={(e) => setSignup({ ...signup, age: e.target.value })} />
               <input className="input-field" placeholder="Email" value={signup.email} onChange={(e) => setSignup({ ...signup, email: e.target.value })} />
@@ -219,7 +219,7 @@ function OnboardingScreen({ user, onDone }) {
       <form className="glass-card p-8 md:p-10 max-w-3xl w-full" onSubmit={submit}>
         <div className="badge mb-4"><UserRound size={16} /> Onboarding</div>
         <h1 className="text-3xl md:text-5xl font-black">เริ่มปรับคำแนะนำให้เหมาะกับคุณ</h1>
-        <p className="mt-4 text-[rgba(75,53,40,.68)] leading-8">ตอบสั้น ๆ เพื่อให้ AI mock ในเว็บ demo นี้ให้คำแนะนำที่ใกล้เคียงบริบทของคุณมากขึ้นตั้งแต่วันแรก</p>
+        <p className="mt-4 text-[rgba(75,53,40,.68)] leading-8">ตอบสั้น ๆ เพื่อให้ AI นี้ให้คำแนะนำที่ใกล้เคียงบริบทของคุณมากขึ้นตั้งแต่วันแรก</p>
         {error && <div className="soft-card p-4 mt-5 text-[#9a4a3c] font-bold">{error}</div>}
         <div className="space-y-5 mt-7">
           <label className="block">
@@ -268,8 +268,8 @@ function Navbar({ user, page, setPage, onLogout }) {
       <button className="flex items-center gap-3 bg-transparent border-0 text-left" onClick={() => setPage('today')}>
         <div className="w-11 h-11 rounded-full bg-[rgba(111,78,55,.12)] grid place-items-center"><Moon size={21} /></div>
         <div>
-          <div className="font-black leading-5">Mood Mirror</div>
-          <div className="text-xs text-[rgba(75,53,40,.58)]">Diary v2</div>
+          <div className="font-black leading-5">Mood Mirror Diary</div>
+          <div className="text-xs text-[rgba(75,53,40,.58)]"></div>
         </div>
       </button>
       <div className="nav-links">
@@ -508,7 +508,7 @@ function ResultView({ entry, date }) {
     <section className="space-y-5">
       <div className="glass-card p-7 md:p-9">
         <div className="badge mb-4"><Sparkles size={16} /> Result Today</div>
-        <h1 className="text-3xl md:text-5xl font-black">ผลวิเคราะห์วันที่ {formatThaiDate(date)}</h1>
+        <h1 className="text-3xl md:text-5xl font-black">ผลวิเคราะห์ {formatThaiDate(date)}</h1>
         <p className="mt-4 leading-8 text-[rgba(75,53,40,.72)]">{analysis.mentalSummary}</p>
         <div className="grid-auto mt-7">
           <StatCard title="Stress Score" value={`${analysis.stressScore}/100`} sub={analysis.stressLevel} />
@@ -1082,7 +1082,7 @@ function TreePage({ user }) {
         <div className="badge mb-4"><Leaf size={16}/> Growth Tree</div>
         <h1 className="text-3xl md:text-5xl font-black" style={{color:'#3a2a18'}}>ต้นไม้สุขภาพใจของคุณ</h1>
         <p className="mt-4 leading-8 text-[rgba(75,53,40,.70)]">
-          เขียน Diary ต่อเนื่องทุกวัน ต้นไม้จะค่อยๆ เติบโตและใบจะสดใสขึ้น หากหยุดเกิน 7 วัน ต้นจะรอการดูแลใหม่
+          เขียน Diary ต่อเนื่องทุกวัน ต้นไม้จะค่อยๆ เติบโตและใบจะสดใสขึ้น หากหยุดเขียนเกิน 7 วัน ต้นไม้จะเริ่มเหี่ยวเฉา ต้องรอการดูแลใหม่
         </p>
         <div className="flex flex-wrap gap-3 mt-5">
           <span className="badge"><Flame size={16}/> Streak {streak} วัน</span>
@@ -1114,18 +1114,8 @@ function SettingsPage({ user, onUserChange, onLogout }) {
       <h1 className="text-3xl md:text-5xl font-black">ตั้งค่า</h1>
       <div className="grid-auto mt-7">
         <InfoCard title="ผู้ใช้" text={`${user.username} | ${user.email}`} />
-        <InfoCard title="ข้อมูล demo" text="ข้อมูลทั้งหมดเก็บใน localStorage ของ browser นี้เท่านั้น" />
       </div>
-      <div className="soft-card p-6 mt-6">
-        <h2 className="text-2xl font-black">Reset เว็บ/ข้อมูล demo</h2>
-        <p className="mt-2 leading-8 text-[rgba(75,53,40,.68)]">พิมพ์ RESET เพื่อยืนยันการล้างข้อมูล เหมาะสำหรับเริ่ม demo ใหม่ตั้งแต่ต้น</p>
-        <input className="input-field mt-4" placeholder="พิมพ์ RESET" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} />
-        <div className="flex flex-wrap gap-3 mt-5">
-          <button className="btn-danger" disabled={confirmText !== 'RESET'} onClick={resetUserOnly}>ล้าง Diary ของผู้ใช้นี้</button>
-          <button className="btn-danger" disabled={confirmText !== 'RESET'} onClick={resetWholeApp}>รีเซ็ตเว็บทั้งหมด</button>
-          <button className="btn-secondary" onClick={onLogout}>Log out</button>
-        </div>
-      </div>
+
     </section>
   );
 }
