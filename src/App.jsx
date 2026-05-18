@@ -1094,31 +1094,6 @@ function TreePage({ user }) {
   );
 }
 
-function SettingsPage({ user, onUserChange, onLogout }) {
-  const [confirmText, setConfirmText] = useState('');
-  const resetUserOnly = () => {
-    if (confirmText !== 'RESET') return;
-    const nextUser = { ...user, entries: {} };
-    saveUser(user.username, nextUser);
-    onUserChange(nextUser);
-    setConfirmText('');
-  };
-  const resetWholeApp = () => {
-    if (confirmText !== 'RESET') return;
-    resetAllData();
-    onLogout();
-  };
-  return (
-    <section className="glass-card p-7 md:p-9">
-      <div className="badge mb-4"><Settings size={16} /> Settings</div>
-      <h1 className="text-3xl md:text-5xl font-black">ตั้งค่า</h1>
-      <div className="grid-auto mt-7">
-        <InfoCard title="ผู้ใช้" text={`${user.username} | ${user.email}`} />
-      </div>
-
-    </section>
-  );
-}
 
 function EmptyState({ title, text, icon }) {
   return (
