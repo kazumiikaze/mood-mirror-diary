@@ -966,157 +966,128 @@ function TreePage({ user }) {
     : streak >= 3 ? 'กำลังแตกใบใหม่'
     : 'ต้นกล้าเริ่มเติบโต';
 
-  const canopyScale = Math.min(1.35, 0.55 + streak * 0.058);
-  const leafOpacity = resetVisual ? 0.28 : 1;
+  const s = Math.min(1.45, 0.55 + streak * 0.065);
+  const op = resetVisual ? 0.28 : 1;
 
   return (
-    <section style={{ position: 'relative', minHeight: 600, overflow: 'hidden', borderRadius: 32, background: 'linear-gradient(180deg,#c8e8f8 0%,#dff0e8 28%,#f0ead8 62%,#e0c898 100%)' }}>
-
-      {/* ---- SVG ฉากหลัง + ต้นไม้ ---- */}
-      <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+    <section style={{
+      position: 'relative', minHeight: 600, overflow: 'hidden', borderRadius: 32,
+      background: 'linear-gradient(180deg,#cce8f4 0%,#e8f4f0 30%,#f0ece0 62%,#dfc9a0 85%,#c8a870 100%)'
+    }}>
+      <svg style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', pointerEvents:'none' }}
         viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="sunG" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#fff8c0"/>
-            <stop offset="45%" stopColor="#ffe870"/>
-            <stop offset="75%" stopColor="#ffd040" stopOpacity=".6"/>
-            <stop offset="100%" stopColor="#ffb800" stopOpacity="0"/>
+            <stop offset="0%" stopColor="#fff8c0"/><stop offset="40%" stopColor="#ffe880"/>
+            <stop offset="75%" stopColor="#ffd060" stopOpacity=".5"/><stop offset="100%" stopColor="#ffc040" stopOpacity="0"/>
           </radialGradient>
-          <radialGradient id="trunkG" cx="32%" cy="40%" r="68%">
-            <stop offset="0%" stopColor="#d4a878"/>
-            <stop offset="45%" stopColor="#a87848"/>
-            <stop offset="100%" stopColor="#6c4820"/>
+          <radialGradient id="sunCore" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#fffde0"/><stop offset="60%" stopColor="#ffe890"/><stop offset="100%" stopColor="#ffd060"/>
           </radialGradient>
-          <radialGradient id="c1" cx="38%" cy="38%" r="62%">
-            <stop offset="0%" stopColor="#d8f0b8"/>
-            <stop offset="40%" stopColor="#b0d888"/>
-            <stop offset="100%" stopColor="#78a850"/>
+          <radialGradient id="trunkG" cx="32%" cy="40%" r="65%">
+            <stop offset="0%" stopColor="#d4a878"/><stop offset="45%" stopColor="#a87848"/><stop offset="100%" stopColor="#6e4c28"/>
           </radialGradient>
-          <radialGradient id="c2" cx="35%" cy="35%" r="65%">
-            <stop offset="0%" stopColor="#e8f8c8"/>
-            <stop offset="45%" stopColor="#c0e890"/>
-            <stop offset="100%" stopColor="#88c058"/>
+          <radialGradient id="c1" cx="38%" cy="35%" r="65%">
+            <stop offset="0%" stopColor="#d8f0c8"/><stop offset="45%" stopColor="#a8d888"/><stop offset="100%" stopColor="#78b858"/>
           </radialGradient>
-          <radialGradient id="c3" cx="30%" cy="32%" r="70%">
-            <stop offset="0%" stopColor="#f0fcd8"/>
-            <stop offset="50%" stopColor="#d0f0a0"/>
-            <stop offset="100%" stopColor="#98d068"/>
+          <radialGradient id="c2" cx="32%" cy="30%" r="70%">
+            <stop offset="0%" stopColor="#e8f8d8"/><stop offset="45%" stopColor="#c0e898"/><stop offset="100%" stopColor="#90c868"/>
           </radialGradient>
-          <radialGradient id="c4" cx="28%" cy="28%" r="72%">
-            <stop offset="0%" stopColor="#f8ffe8"/>
-            <stop offset="55%" stopColor="#e0f8b8"/>
-            <stop offset="100%" stopColor="#b8e880"/>
+          <radialGradient id="c3" cx="28%" cy="25%" r="72%">
+            <stop offset="0%" stopColor="#f0fce4"/><stop offset="50%" stopColor="#d4f0a8"/><stop offset="100%" stopColor="#a8d878"/>
           </radialGradient>
-          <radialGradient id="c5" cx="25%" cy="25%" r="75%">
-            <stop offset="0%" stopColor="#ffffff"/>
-            <stop offset="40%" stopColor="#f0ffdc"/>
-            <stop offset="80%" stopColor="#d8f8a8"/>
-            <stop offset="100%" stopColor="#c0e880"/>
+          <radialGradient id="c4" cx="25%" cy="22%" r="70%">
+            <stop offset="0%" stopColor="#f8fef0"/><stop offset="55%" stopColor="#e4f8c8"/><stop offset="100%" stopColor="#c0e890"/>
           </radialGradient>
-          <filter id="leafShadow">
-            <feDropShadow dx="2" dy="5" stdDeviation="8" floodColor="rgba(40,80,20,0.18)"/>
-          </filter>
-          <filter id="trunkShadow">
-            <feDropShadow dx="4" dy="8" stdDeviation="6" floodColor="rgba(40,20,0,0.22)"/>
-          </filter>
+          <radialGradient id="c5" cx="22%" cy="20%" r="68%">
+            <stop offset="0%" stopColor="#fefffa"/><stop offset="60%" stopColor="#eefcd8"/><stop offset="100%" stopColor="#d0f0a8"/>
+          </radialGradient>
+          <filter id="fs"><feDropShadow dx="2" dy="5" stdDeviation="7" floodColor="#4a7030" floodOpacity=".22"/></filter>
+          <filter id="fs2"><feDropShadow dx="1" dy="3" stdDeviation="4" floodColor="#4a7030" floodOpacity=".15"/></filter>
+          <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
 
         {/* ดวงอาทิตย์ */}
-        <circle cx="660" cy="72" r="62" fill="url(#sunG)" style={{ animation: 'sunPulse 6s ease-in-out infinite' }}/>
-        <ellipse cx="660" cy="72" rx="34" ry="34" fill="#fff9d0" opacity=".55"/>
+        <ellipse cx="640" cy="80" rx="130" ry="130" fill="url(#sunG)" style={{animation:'sunPulse 7s ease-in-out infinite'}}/>
+        <ellipse cx="640" cy="80" rx="46" ry="46" fill="url(#sunCore)" style={{animation:'sunPulse 7s ease-in-out infinite'}}/>
 
         {/* เมฆ */}
-        <rect x="480" y="110" width="100" height="22" rx="11" fill="rgba(255,255,255,0.72)" style={{ animation: 'cloudDrift 14s ease-in-out infinite' }}/>
-        <rect x="560" y="100" width="68" height="16" rx="8" fill="rgba(255,255,255,0.60)" style={{ animation: 'cloudDrift 14s ease-in-out infinite', animationDelay: '-5s' }}/>
-        <rect x="100" y="90" width="82" height="18" rx="9" fill="rgba(255,255,255,0.55)" style={{ animation: 'cloudDrift 14s ease-in-out infinite', animationDelay: '-9s' }}/>
-
-        {/* พื้น */}
-        <rect x="0" y="480" width="800" height="120" fill="#a07848"/>
-        <ellipse cx="400" cy="480" rx="420" ry="22" fill="#c8a870" opacity=".7"/>
-        <path d="M0,480 Q200,458 400,468 Q600,478 800,460 L800,480 L0,480Z" fill="#90c858"/>
-        <path d="M0,475 Q200,460 400,470 Q600,478 800,462 L800,476 L0,476Z" fill="#a8d870" opacity=".7"/>
-        <path d="M0,472 Q200,464 400,472 Q600,478 800,464 L800,472 L0,472Z" fill="#c0e888" opacity=".55"/>
-
-        {/* หญ้า */}
-        <g style={{ animation: 'grassSway 3.5s ease-in-out infinite', transformOrigin: '120px 480px' }}>
-          <path d="M118,480 Q114,458 120,440 Q124,428 118,414" fill="none" stroke="#6a9838" strokeWidth="2.5" strokeLinecap="round"/>
-          <path d="M126,480 Q130,462 126,446 Q122,432 128,420" fill="none" stroke="#7ab848" strokeWidth="2" strokeLinecap="round"/>
+        <g style={{animation:'cloudDrift 16s ease-in-out infinite'}}>
+          <ellipse cx="180" cy="90" rx="54" ry="20" fill="rgba(255,255,255,.72)"/>
+          <ellipse cx="155" cy="98" rx="32" ry="16" fill="rgba(255,255,255,.68)"/>
+          <ellipse cx="215" cy="95" rx="36" ry="15" fill="rgba(255,255,255,.65)"/>
         </g>
-        <g style={{ animation: 'grassSway 4.2s ease-in-out infinite', animationDelay: '-.8s', transformOrigin: '650px 480px' }}>
-          <path d="M648,480 Q644,460 650,442 Q654,430 648,416" fill="none" stroke="#6a9838" strokeWidth="2.5" strokeLinecap="round"/>
-          <path d="M658,480 Q662,462 658,446" fill="none" stroke="#7ab848" strokeWidth="2" strokeLinecap="round"/>
+        <g style={{animation:'cloudDrift 20s ease-in-out infinite', animationDelay:'-8s'}}>
+          <ellipse cx="520" cy="60" rx="40" ry="15" fill="rgba(255,255,255,.55)"/>
+          <ellipse cx="500" cy="68" rx="24" ry="12" fill="rgba(255,255,255,.50)"/>
+          <ellipse cx="548" cy="65" rx="28" ry="11" fill="rgba(255,255,255,.48)"/>
         </g>
 
-        {/* เงาต้นไม้ */}
-        <ellipse cx="400" cy="478" rx="72" ry="13" fill="rgba(50,30,0,0.20)"/>
+        {/* พื้นดิน */}
+        <rect x="0" y="500" width="800" height="100" fill="#c0a068"/>
+        <ellipse cx="400" cy="500" rx="430" ry="28" fill="#c8b07a"/>
+        <ellipse cx="400" cy="488" rx="380" ry="18" fill="#d4bc8a"/>
 
-        {/* ---- ต้นไม้ ---- */}
-        <g style={{ transformOrigin: '400px 480px', animation: 'treeSway 7s ease-in-out infinite' }}>
+        {/* ต้นไม้ */}
+        <g style={{animation:'treeSway 7s ease-in-out infinite', transformOrigin:'400px 500px'}}>
           {/* ลำต้น */}
-          <path d="M383,480 Q376,420 372,360 Q368,290 374,248 Q380,210 390,190 Q395,178 400,174 Q405,178 410,190 Q420,210 426,248 Q432,290 428,360 Q424,420 417,480Z"
-            fill="url(#trunkG)" filter="url(#trunkShadow)"/>
-          <path d="M393,478 Q389,410 387,340 Q385,270 389,230 Q393,200 398,186"
-            fill="none" stroke="rgba(255,235,200,0.30)" strokeWidth="3.5" strokeLinecap="round"/>
+          <path d="M388,500 Q382,430 378,360 Q374,290 380,240 Q384,208 396,190 Q400,182 404,182 Q408,190 416,208 Q422,240 422,290 Q422,360 418,430 Q414,470 412,500Z" fill="url(#trunkG)"/>
+          <path d="M396,500 Q392,420 390,340 Q388,270 392,228 Q395,205 400,192" fill="none" stroke="rgba(255,235,200,.25)" strokeWidth="3" strokeLinecap="round"/>
 
           {/* กิ่ง */}
-          <path d="M400,310 Q358,300 330,282 Q308,266 304,250" fill="none" stroke="#9a7038" strokeWidth="11" strokeLinecap="round"/>
-          <path d="M400,310 Q442,298 470,280 Q492,264 496,248" fill="none" stroke="#9a7038" strokeWidth="11" strokeLinecap="round"/>
-          <path d="M400,268 Q360,254 336,234 Q318,218 316,200" fill="none" stroke="#aa8048" strokeWidth="8.5" strokeLinecap="round"/>
-          <path d="M400,268 Q440,252 464,232 Q482,216 484,198" fill="none" stroke="#aa8048" strokeWidth="8.5" strokeLinecap="round"/>
-          <path d="M400,232 Q368,216 348,196 Q334,178 334,160" fill="none" stroke="#bc9058" strokeWidth="6.5" strokeLinecap="round"/>
-          <path d="M400,232 Q432,214 452,194 Q466,176 466,158" fill="none" stroke="#bc9058" strokeWidth="6.5" strokeLinecap="round"/>
-          <path d="M400,202 Q374,184 358,162 Q348,144 350,124" fill="none" stroke="#cc9e68" strokeWidth="5" strokeLinecap="round"/>
-          <path d="M400,202 Q426,182 442,160 Q452,142 450,122" fill="none" stroke="#cc9e68" strokeWidth="5" strokeLinecap="round"/>
-          <path d="M400,178 Q380,156 370,132 Q364,114 366,96" fill="none" stroke="#d8ae78" strokeWidth="3.5" strokeLinecap="round"/>
-          <path d="M400,178 Q420,154 430,130 Q436,112 434,94" fill="none" stroke="#d8ae78" strokeWidth="3.5" strokeLinecap="round"/>
+          {[
+            ["M400,310 Q348,298 318,278 Q296,262 292,244","#9a7040",10],
+            ["M400,310 Q452,296 482,276 Q506,260 510,242","#9a7040",10],
+            ["M400,268 Q355,252 330,230 Q312,212 310,192","#aa8050",7.5],
+            ["M400,268 Q445,250 470,228 Q488,210 490,190","#aa8050",7.5],
+            ["M400,232 Q366,214 348,192 Q336,174 336,156","#ba9060",6],
+            ["M400,232 Q434,212 452,190 Q464,172 464,154","#ba9060",6],
+            ["M400,204 Q378,184 366,162 Q358,144 360,126","#c8a070",4.5],
+            ["M400,204 Q422,182 434,160 Q442,142 440,124","#c8a070",4.5],
+          ].map(([d,s,w],i) => <path key={i} d={d} fill="none" stroke={s} strokeWidth={w} strokeLinecap="round"/>)}
 
           {/* ทรงพุ่ม */}
-          <g transform={`translate(400,200) scale(${canopyScale}) translate(-400,-200)`} opacity={leafOpacity} filter="url(#leafShadow)">
-            <ellipse cx="400" cy="200" rx="168" ry="128" fill="url(#c1)" opacity=".82"/>
-            <ellipse cx="310" cy="238" rx="82" ry="65" fill="url(#c1)" opacity=".78"/>
-            <ellipse cx="490" cy="232" rx="78" ry="62" fill="url(#c1)" opacity=".76"/>
-            <ellipse cx="386" cy="176" rx="152" ry="114" fill="url(#c2)" opacity=".86"/>
-            <ellipse cx="300" cy="204" rx="68" ry="56" fill="url(#c2)" opacity=".80"/>
-            <ellipse cx="500" cy="198" rx="64" ry="54" fill="url(#c2)" opacity=".78"/>
-            <ellipse cx="374" cy="152" rx="132" ry="100" fill="url(#c3)" opacity=".88"/>
-            <ellipse cx="314" cy="170" rx="58" ry="48" fill="url(#c3)" opacity=".82"/>
-            <ellipse cx="488" cy="164" rx="56" ry="46" fill="url(#c3)" opacity=".80"/>
-            <ellipse cx="362" cy="128" rx="110" ry="84" fill="url(#c4)" opacity=".90"/>
-            <ellipse cx="326" cy="142" rx="48" ry="40" fill="url(#c4)" opacity=".84"/>
-            <ellipse cx="474" cy="136" rx="46" ry="38" fill="url(#c4)" opacity=".82"/>
-            <ellipse cx="354" cy="108" rx="88" ry="68" fill="url(#c5)" opacity=".88"/>
-            <ellipse cx="368" cy="90" rx="68" ry="54" fill="url(#c5)" opacity=".84"/>
-            <ellipse cx="382" cy="74" rx="48" ry="38" fill="url(#c5)" opacity=".80"/>
-            <ellipse cx="392" cy="60" rx="30" ry="24" fill="#f8ffec" opacity=".72"/>
-            {/* highlight spots */}
-            <ellipse cx="336" cy="170" rx="22" ry="16" fill="rgba(248,255,220,0.55)" transform="rotate(-18,336,170)"/>
-            <ellipse cx="462" cy="158" rx="20" ry="15" fill="rgba(248,255,220,0.50)" transform="rotate(14,462,158)"/>
-            <ellipse cx="366" cy="118" rx="26" ry="18" fill="rgba(255,255,235,0.62)" transform="rotate(-8,366,118)"/>
-            <ellipse cx="390" cy="78" rx="18" ry="14" fill="rgba(255,255,245,0.70)"/>
-            {/* sparkles */}
-            <circle cx="318" cy="186" r="5" fill="rgba(255,232,80,0.75)" style={{ animation: 'sparkle 3.8s ease-in-out infinite' }}/>
-            <circle cx="482" cy="174" r="4.5" fill="rgba(255,238,100,0.70)" style={{ animation: 'sparkle 4.4s ease-in-out infinite', animationDelay: '-.9s' }}/>
-            <circle cx="350" cy="130" r="5" fill="rgba(255,240,120,0.72)" style={{ animation: 'sparkle 3.5s ease-in-out infinite', animationDelay: '-1.6s' }}/>
-            <circle cx="386" cy="72" r="5.5" fill="rgba(255,248,160,0.80)" style={{ animation: 'sparkle 3.2s ease-in-out infinite', animationDelay: '-2s' }}/>
+          <g transform={`translate(400,220) scale(${s}) translate(-400,-220)`} opacity={op}>
+            <ellipse cx="400" cy="220" rx="170" ry="128" fill="url(#c1)" filter="url(#fs)" opacity=".85"/>
+            <ellipse cx="310" cy="255" rx="82" ry="65" fill="url(#c1)" filter="url(#fs2)" opacity=".80"/>
+            <ellipse cx="492" cy="250" rx="78" ry="62" fill="url(#c1)" filter="url(#fs2)" opacity=".78"/>
+            <ellipse cx="388" cy="198" rx="154" ry="116" fill="url(#c2)" opacity=".88"/>
+            <ellipse cx="380" cy="172" rx="132" ry="102" fill="url(#c3)" opacity=".90"/>
+            <ellipse cx="370" cy="148" rx="112" ry="88" fill="url(#c3)" opacity=".88"/>
+            <ellipse cx="360" cy="126" rx="90" ry="72" fill="url(#c4)" opacity=".90"/>
+            <ellipse cx="356" cy="106" rx="70" ry="57" fill="url(#c4)" opacity=".88"/>
+            <ellipse cx="354" cy="88" rx="52" ry="43" fill="url(#c5)" opacity=".92"/>
+            <ellipse cx="353" cy="74" rx="36" ry="30" fill="url(#c5)" opacity=".90"/>
+            <ellipse cx="352" cy="62" rx="22" ry="19" fill="rgba(250,255,242,.88)" opacity=".85"/>
+            <ellipse cx="332" cy="168" rx="34" ry="26" fill="rgba(240,255,220,.50)" transform="rotate(-18,332,168)"/>
+            <ellipse cx="428" cy="155" rx="30" ry="22" fill="rgba(240,255,220,.44)" transform="rotate(14,428,155)"/>
+            <ellipse cx="352" cy="74" rx="16" ry="12" fill="rgba(255,255,248,.70)"/>
+            <g filter="url(#glow)">
+              {[[348,148,4.5,.80,3.2],[428,138,3.5,.72,4.1,-.7],[362,92,4,.85,2.8,-1.4],[390,68,3,.90,3.6,-2],[310,200,3,.65,5,-.4],[486,195,3,.62,4.4,-1.1]].map(([x,y,r,o,d,dl=0],i)=>(
+                <circle key={i} cx={x} cy={y} r={r} fill={`rgba(255,240,100,${o})`} style={{animation:`sparkle ${d}s ease-in-out infinite`, animationDelay:`${dl}s`}}/>
+              ))}
+            </g>
           </g>
         </g>
 
-        {/* นก */}
-        <path d="M80,340 Q90,330 100,340" fill="none" stroke="rgba(60,80,100,0.55)" strokeWidth="1.8" strokeLinecap="round" style={{ animation: 'birdfly 14s ease-in-out infinite', animationDelay: '-3s' }}/>
-        <path d="M105,334 Q115,324 125,334" fill="none" stroke="rgba(60,80,100,0.50)" strokeWidth="1.5" strokeLinecap="round" style={{ animation: 'birdfly 14s ease-in-out infinite', animationDelay: '-3s' }}/>
+        {/* เงาต้นไม้ */}
+        <ellipse cx="400" cy="498" rx="96" ry="12" fill="rgba(80,50,20,.20)"/>
+        {/* พุ่มไม้เล็กข้างๆ */}
+        <ellipse cx="158" cy="490" rx="44" ry="38" fill="#c8d8a8" opacity=".55"/>
+        <ellipse cx="630" cy="488" rx="38" ry="34" fill="#c8d8a8" opacity=".50"/>
       </svg>
 
-      {/* ---- ข้อความ overlay ---- */}
-      <div style={{ position: 'absolute', top: 28, left: 28, right: 28, zIndex: 10 }}>
-        <div className="badge mb-4"><Leaf size={16} /> Growth Tree</div>
-        <h1 className="text-3xl md:text-5xl font-black">ต้นไม้สุขภาพใจของคุณ</h1>
-        <p className="mt-4 leading-8 text-[rgba(75,53,40,.70)] max-w-lg">
-          เขียน Diary ต่อเนื่องทุกวัน ต้นไม้จะค่อย ๆ แตกกิ่งก้านและใบอ่อน หากไม่ได้กลับมาเกิน 7 วัน ใบไม้จะร่วงและรอการดูแลใหม่
+      {/* ข้อความ */}
+      <div style={{ position:'relative', zIndex:10, padding:'28px 32px', maxWidth:480 }}>
+        <div className="badge mb-4"><Leaf size={16}/> Growth Tree</div>
+        <h1 className="text-3xl md:text-5xl font-black" style={{color:'#3a2a18'}}>ต้นไม้สุขภาพใจของคุณ</h1>
+        <p className="mt-4 leading-8 text-[rgba(75,53,40,.70)]">
+          เขียน Diary ต่อเนื่องทุกวัน ต้นไม้จะค่อยๆ เติบโตและใบจะสดใสขึ้น หากหยุดเกิน 7 วัน ต้นจะรอการดูแลใหม่
         </p>
         <div className="flex flex-wrap gap-3 mt-5">
-          <span className="badge"><Flame size={16} /> Streak {streak} วัน</span>
-          <span className="badge"><Sprout size={16} /> {growthLabel}</span>
-          {resetVisual && <span className="badge text-[#9a4a3c]"><RotateCcw size={16} /> ต้นไม้ต้องการการดูแล</span>}
+          <span className="badge"><Flame size={16}/> Streak {streak} วัน</span>
+          <span className="badge"><Sprout size={16}/> {growthLabel}</span>
+          {resetVisual && <span className="badge text-[#9a4a3c]"><RotateCcw size={16}/> ต้นไม้ต้องการการดูแล</span>}
         </div>
       </div>
     </section>

@@ -556,7 +556,15 @@ button:disabled { cursor: not-allowed; opacity: .58; }
 @keyframes cloudDrift { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-16px); } }
 @keyframes auraFloat { 0%,100% { transform: translateX(-50%) scale(1); opacity: .78; } 50% { transform: translateX(-50%) translateY(-8px) scale(1.04); opacity: .95; } }
 @keyframes sparkleDrift { 0%,100% { transform: translateY(0) scale(.75); opacity: .28; } 45% { transform: translateY(-12px) scale(1.15); opacity: .86; } }
-
+@keyframes treeSway {
+  0%,100% { transform: rotate(0deg); }
+  25% { transform: rotate(.35deg); }
+  75% { transform: rotate(-.35deg); }
+}
+@keyframes sparkle {
+  0%,100% { opacity:.2; transform:scale(.6); }
+  50% { opacity:.9; transform:scale(1.2); }
+}
 .report-print {
   position: fixed;
   left: -9999px;
